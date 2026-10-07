@@ -55,13 +55,24 @@ public class MeetingServiceImpl implements MeetingService {
 
         User user = getLoggedInUser();
 
-        Meeting meeting = meetingRepository
-                .findByIdAndCreatedBy(id, user.getId())
-                .orElseThrow(() ->
-                        new MeetingNotFoundException(
-                                "Meeting not found with id: " + id
-                        )
-                );
+        Meeting meeting;
+
+        if (isAdmin(user)) {
+            meeting = meetingRepository.findById(id)
+                    .orElseThrow(() ->
+                            new MeetingNotFoundException(
+                                    "Meeting not found with id: " + id
+                            )
+                    );
+        } else {
+            meeting = meetingRepository
+                    .findByIdAndCreatedBy(id, user.getId())
+                    .orElseThrow(() ->
+                            new MeetingNotFoundException(
+                                    "Meeting not found with id: " + id
+                            )
+                    );
+        }
 
         return convertToResponse(meeting);
     }
@@ -70,6 +81,13 @@ public class MeetingServiceImpl implements MeetingService {
     public List<MeetingResponseDTO> getAllMeetings() {
 
         User user = getLoggedInUser();
+
+        if (isAdmin(user)) {
+            return meetingRepository.findAll()
+                    .stream()
+                    .map(this::convertToResponse)
+                    .toList();
+        }
 
         return meetingRepository
                 .findByCreatedBy(user.getId())
@@ -85,13 +103,24 @@ public class MeetingServiceImpl implements MeetingService {
 
         User user = getLoggedInUser();
 
-        Meeting meeting = meetingRepository
-                .findByIdAndCreatedBy(id, user.getId())
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Meeting not found with id: " + id
-                        )
-                );
+        Meeting meeting;
+
+        if (isAdmin(user)) {
+            meeting = meetingRepository.findById(id)
+                    .orElseThrow(() ->
+                            new MeetingNotFoundException(
+                                    "Meeting not found with id: " + id
+                            )
+                    );
+        } else {
+            meeting = meetingRepository
+                    .findByIdAndCreatedBy(id, user.getId())
+                    .orElseThrow(() ->
+                            new MeetingNotFoundException(
+                                    "Meeting not found with id: " + id
+                            )
+                    );
+        }
 
         meeting.setTitle(meetingRequest.getTitle());
         meeting.setDescription(meetingRequest.getDescription());
@@ -109,13 +138,24 @@ public class MeetingServiceImpl implements MeetingService {
 
         User user = getLoggedInUser();
 
-        Meeting meeting = meetingRepository
-                .findByIdAndCreatedBy(id, user.getId())
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Meeting not found with id: " + id
-                        )
-                );
+        Meeting meeting;
+
+        if (isAdmin(user)) {
+            meeting = meetingRepository.findById(id)
+                    .orElseThrow(() ->
+                            new MeetingNotFoundException(
+                                    "Meeting not found with id: " + id
+                            )
+                    );
+        } else {
+            meeting = meetingRepository
+                    .findByIdAndCreatedBy(id, user.getId())
+                    .orElseThrow(() ->
+                            new MeetingNotFoundException(
+                                    "Meeting not found with id: " + id
+                            )
+                    );
+        }
 
         meetingRepository.delete(meeting);
     }
@@ -132,6 +172,10 @@ public class MeetingServiceImpl implements MeetingService {
                 .orElseThrow(() ->
                         new RuntimeException("User not found")
                 );
+    }
+
+    private boolean isAdmin(User user) {
+        return "ADMIN".equals(user.getRole());
     }
 
     private MeetingResponseDTO convertToResponse(Meeting meeting) {
